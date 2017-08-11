@@ -39,6 +39,13 @@ public:
 	/// Close log file.
 	virtual void Close(void);
 
+	/// Add Support Control File Size
+
+	/// Get maximum log file size in bytes.
+	virtual DWORD GetLogSizeInBytes(void) const;
+	/// Set maximum log file size in bytes.
+	virtual BOOL SetLogSizeInBytes(DWORD dwLogSizeInBytes);
+
 protected:
 	/// Get default log file extension.
 	virtual PCTSTR GetLogFileExtension(void) const;
@@ -58,9 +65,12 @@ private:
 	CUTF8EncStream m_EncStream;
 	/// Pre-allocated buffer for encoded log entry text.
 	CMemStream m_MemStream;
+
+	DWORD      m_SizeInBytes;
 };
 
 inline CLogStream::CLogStream(void) : m_MemStream(1024), m_EncStream(&m_MemStream)
+	,m_SizeInBytes(0)
 {
 	m_hFile = INVALID_HANDLE_VALUE;
 }

@@ -1,0 +1,19 @@
+// 3种类型.	
+	case BTLF_TEXT:
+		pLogFile = new CTextLogFile();
+		break;
+	case BTLF_XML:
+		pLogFile = new CXmlLogFile();
+		break;
+	case BTLF_STREAM:
+		pLogFile = new CLogStream();
+		break;
+	default:
+		_ASSERT(FALSE);
+		
+		// 控制台输出log
+1.
+AllocConsole();
+freopen("CONOUT$", "w+t", stderr);
+2.
+BT_SetLogEchoMode(handler, BTLE_STDERR | BTLE_DBGOUT);

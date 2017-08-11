@@ -16,6 +16,20 @@
 #include "LogStream.h"
 #include "TextFormat.h"
 
+
+DWORD CLogStream::GetLogSizeInBytes(void) const
+{
+	return m_SizeInBytes;
+}
+
+BOOL CLogStream::SetLogSizeInBytes(DWORD dwLogSizeInBytes)
+{
+	m_SizeInBytes = dwLogSizeInBytes;
+	return TRUE;
+}
+
+
+
 /**
  * @return true if operation was completed successfully.
  */
@@ -37,6 +51,10 @@ BOOL CLogStream::LoadEntries(void)
 	}
 	else
 	{
+		if (dwFileSize > 10 * 1024 * 1024) {// lager than 10M ,we clear data.
+			if (SetFilePointer(m_hFile, 0, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
+				goto error;
+		}
 		if (SetFilePointer(m_hFile, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER)
 			goto error;
 	}
@@ -100,7 +118,30 @@ BOOL CLogStream::WriteLogEntry(BUGTRAP_LOGLEVEL eLogLevel, ENTRY_MODE eEntryMode
 		DWORD dwLength = (DWORD)m_MemStream.GetLength();
 		_ASSERTE(dwLength > 0);
 		DWORD dwWritten;
-		return WriteFile(m_hFile, pBuffer, dwLength, &dwWritten, NULL);
+
+		DWORD dwFilePos = SetFilePointer(m_hFile, 0, NULL, FILE_CURRENT);
+		if (dwFilePos == INVALID_SET_FILE_POINTER) {
+				char buf[256];
+				sprintf_s(buf, 256, "SetFilePointer get error = %d\n", GetLastError());
+				WriteFile(m_hFile, buf, strlen(buf), &dwWritten, NULL);
+
+		}
+		if(m_SizeInBytes > 0){
+			if (dwFilePos >  m_SizeInBytes) {
+				 DWORD dwSet  = SetFilePointer(m_hFile, 0, NULL, FILE_BEGIN); 
+				// if (dwSet == INVALID_SET_FILE_POINTER)
+				 {
+					 char buf[256];
+					 sprintf_s(buf, 256, "SetFilePointer get error = %d\n", GetLastError());
+					 WriteFile(m_hFile, buf, strlen(buf), &dwWritten, NULL);
+				 }
+			}
+			return WriteFile(m_hFile, pBuffer, dwLength, &dwWritten, NULL);
+
+		}else {
+			return WriteFile(m_hFile, pBuffer, dwLength, &dwWritten, NULL);
+		}
+
 	}
 	return TRUE;
 }

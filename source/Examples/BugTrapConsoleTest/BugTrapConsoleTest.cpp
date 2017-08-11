@@ -23,9 +23,13 @@ static void SetupExceptionHandler()
 	// required for VS 2005 & 2008
 	BT_InstallSehFilter();
 
+	BT_SetActivityType(BTA_SAVEREPORT);
+	BT_SetReportFilePath("D:\\");
+
 	// Add custom log file using default name
-	g_iLogHandle = BT_OpenLogFile(NULL, BTLF_TEXT);
-	BT_SetLogSizeInEntries(g_iLogHandle, 100);
+	g_iLogHandle = BT_OpenLogFile("d:\\mylog.log", BTLF_STREAM);
+//	BT_SetLogSizeInEntries(g_iLogHandle, 100);
+	BT_SetLogSizeInBytes(g_iLogHandle, 1000);
 	BT_SetLogFlags(g_iLogHandle, BTLF_SHOWTIMESTAMP);
 	BT_SetLogEchoMode(g_iLogHandle, BTLE_STDERR | BTLE_DBGOUT);
 
@@ -36,11 +40,22 @@ static void SetupExceptionHandler()
 static unsigned APIENTRY ThreadFunc(void* /*args*/)
 {
 	BT_SetTerminate(); // set_terminate() must be called from every thread
-	BT_InsLogEntry(g_iLogHandle, BTLL_INFO, _T("Entering ThreadFunc() function"));
+	//BT_InsLogEntry(g_iLogHandle, BTLL_INFO, _T("Entering ThreadFunc() function"));
 
-	// Throwing access violation
 	int* ptr = 0;
 	*ptr = 0;
+
+
+	DWORD index = 0;
+	while (true) { 
+		index++;
+		BT_AppLogEntryF(g_iLogHandle, BTLL_INFO, _T("Entering ThreadFunc() functio Entering ThreadFunc() functio Entering ThreadFunc() function Entering ThreadFunc() function index  =  %d"),index);
+	///	Sleep()
+	}
+
+	// Throwing access violation
+// 	int* ptr = 0;
+// 	*ptr = 0;
 
 	// throwing exception
 	//throw "exception";
@@ -53,12 +68,19 @@ void _tmain()
 {
 	SetupExceptionHandler();
 	BT_SetTerminate(); // set_terminate() must be called from every thread
-	BT_InsLogEntry(g_iLogHandle, BTLL_INFO, _T("Entering main() function"));
+	//BT_InsLogEntry(g_iLogHandle, BTLL_INFO, _T("Entering main() function"));
 
 	// Starting worker thread
 	HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, ThreadFunc, NULL, 0, NULL);
 	WaitForSingleObject(hThread, INFINITE);
 	CloseHandle(hThread);
+
+
+	while (1) {
+
+	}
+	BT_SetLogSizeInBytes(g_iLogHandle,1000);
+
 
 	BT_InsLogEntry(g_iLogHandle, BTLL_INFO, _T("Leaving main() function"));
 	BT_CloseLogFile(g_iLogHandle);

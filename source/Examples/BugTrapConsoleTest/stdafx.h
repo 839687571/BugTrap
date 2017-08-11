@@ -19,11 +19,19 @@
 
 // Link with one of BugTrap libraries.
 #if defined _M_IX86
+#ifdef _DEBUG
  #ifdef _UNICODE
-  #pragma comment(lib, "BugTrapU.lib")
+  #pragma comment(lib, "BugTrapUd.lib")
  #else
-  #pragma comment(lib, "BugTrap.lib")
+  #pragma comment(lib, "BugTrapd.lib")
  #endif
+#else
+#ifdef _UNICODE
+#pragma comment(lib, "BugTrapU.lib")
+#else
+#pragma comment(lib, "BugTrap.lib")
+#endif
+#endif
 #elif defined _M_X64
  #ifdef _UNICODE
   #pragma comment(lib, "BugTrapU-x64.lib")

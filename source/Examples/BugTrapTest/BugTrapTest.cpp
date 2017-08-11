@@ -45,6 +45,9 @@ CBugTrapTestApp::CBugTrapTestApp()
 
 	// required for VS 2005 & 2008
 	BT_InstallSehFilter();
+
+	BT_SetActivityType(BTA_SAVEREPORT);
+	BT_SetReportFilePath("D:\\");
 }
 
 // The one and only CBugTrapTestApp object
