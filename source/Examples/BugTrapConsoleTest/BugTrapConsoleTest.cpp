@@ -2,8 +2,23 @@
 //
 
 #include "stdafx.h"
-
+#include <string>
+using namespace std;
 INT_PTR g_iLogHandle = -1;
+
+string get_app_path()
+{
+	TCHAR szPath[MAX_PATH] = { 0 };
+	::GetModuleFileName(NULL, szPath, MAX_PATH);
+
+	string strPath(szPath);
+	for (int nPos = (int)strPath.size() - 1; nPos >= 0; --nPos) {
+		TCHAR cChar = strPath[nPos];
+		if (_T('\\') == cChar || _T('/') == cChar)
+			return strPath.substr(0, nPos + 1);
+	}
+	return strPath;
+}
 
 static void SetupExceptionHandler()
 {
@@ -24,10 +39,10 @@ static void SetupExceptionHandler()
 	BT_InstallSehFilter();
 
 	BT_SetActivityType(BTA_SAVEREPORT);
-	BT_SetReportFilePath("D:\\");
+	BT_SetReportFilePath(get_app_path().c_str());
 
 	// Add custom log file using default name
-	g_iLogHandle = BT_OpenLogFile("d:\\mylog.log", BTLF_STREAM);
+	g_iLogHandle = BT_OpenLogFile((get_app_path() + "mylog.log").c_str(), BTLF_STREAM);
 //	BT_SetLogSizeInEntries(g_iLogHandle, 100);
 	BT_SetLogSizeInBytes(g_iLogHandle, 1000);
 	BT_SetLogFlags(g_iLogHandle, BTLF_SHOWTIMESTAMP);
@@ -75,7 +90,8 @@ void _tmain()
 	WaitForSingleObject(hThread, INFINITE);
 	CloseHandle(hThread);
 
-
+	int* ptr = 0;
+	*ptr = 0;
 	while (1) {
 
 	}
