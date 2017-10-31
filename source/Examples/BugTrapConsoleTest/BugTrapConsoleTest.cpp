@@ -44,7 +44,7 @@ static void SetupExceptionHandler()
 	// Add custom log file using default name
 	g_iLogHandle = BT_OpenLogFile((get_app_path() + "mylog.log").c_str(), BTLF_STREAM);
 //	BT_SetLogSizeInEntries(g_iLogHandle, 100);
-	BT_SetLogSizeInBytes(g_iLogHandle, 1000);
+	BT_SetLogSizeInBytes(g_iLogHandle, 10000);
 	BT_SetLogFlags(g_iLogHandle, BTLF_SHOWTIMESTAMP);
 	BT_SetLogEchoMode(g_iLogHandle, BTLE_STDERR | BTLE_DBGOUT);
 
@@ -57,15 +57,17 @@ static unsigned APIENTRY ThreadFunc(void* /*args*/)
 	BT_SetTerminate(); // set_terminate() must be called from every thread
 	//BT_InsLogEntry(g_iLogHandle, BTLL_INFO, _T("Entering ThreadFunc() function"));
 
-	int* ptr = 0;
-	*ptr = 0;
+	//int* ptr = 0;
+	//*ptr = 0;
+
+
 
 
 	DWORD index = 0;
 	while (true) { 
 		index++;
 		BT_AppLogEntryF(g_iLogHandle, BTLL_INFO, _T("Entering ThreadFunc() functio Entering ThreadFunc() functio Entering ThreadFunc() function Entering ThreadFunc() function index  =  %d"),index);
-	///	Sleep()
+		Sleep(100);
 	}
 
 	// Throwing access violation

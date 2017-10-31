@@ -16,6 +16,8 @@
 #include "LogStream.h"
 #include "TextFormat.h"
 
+// use 20byte to store write size
+#define  HEADER_BYTE_SIZE   20
 
 DWORD CLogStream::GetLogSizeInBytes(void) const
 {
@@ -39,7 +41,7 @@ BOOL CLogStream::LoadEntries(void)
 	if (m_hFile != INVALID_HANDLE_VALUE)
 		return FALSE;
 	PCTSTR pszLogFileName = GetLogFileName();
-	m_hFile = CreateFile(pszLogFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	m_hFile = CreateFile(pszLogFileName, GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (m_hFile == INVALID_HANDLE_VALUE)
 		return FALSE;
 	DWORD dwFileSize = GetFileSize(m_hFile, NULL);
@@ -128,15 +130,32 @@ BOOL CLogStream::WriteLogEntry(BUGTRAP_LOGLEVEL eLogLevel, ENTRY_MODE eEntryMode
 		}
 		if(m_SizeInBytes > 0){
 			if (dwFilePos >  m_SizeInBytes) {
-				 DWORD dwSet  = SetFilePointer(m_hFile, 0, NULL, FILE_BEGIN); 
-				// if (dwSet == INVALID_SET_FILE_POINTER)
+				DWORD dwSet = SetFilePointer(m_hFile, 0, NULL, FILE_BEGIN);
+				BYTE buf[20];
+				BOOL rRet = ReadFile(m_hFile, buf, 20, &dwWritten, NULL);
+				if (rRet != 0) {
+				
+				}
+				INT32  fileWrite = atoi((char*)buf);
+				if (fileWrite > m_SizeInBytes) {
+					fileWrite = HEADER_BYTE_SIZE;
+				}
+
+				dwSet = SetFilePointer(m_hFile, fileWrite, NULL, FILE_BEGIN);
+				 if (dwSet == INVALID_SET_FILE_POINTER)
 				 {
 					 char buf[256];
 					 sprintf_s(buf, 256, "SetFilePointer get error = %d\n", GetLastError());
 					 WriteFile(m_hFile, buf, strlen(buf), &dwWritten, NULL);
 				 }
 			}
-			return WriteFile(m_hFile, pBuffer, dwLength, &dwWritten, NULL);
+			BOOL ret  = WriteFile(m_hFile, pBuffer, dwLength, &dwWritten, NULL);
+			dwFilePos = SetFilePointer(m_hFile, 0, NULL, FILE_CURRENT);
+			char buf[HEADER_BYTE_SIZE] = {'0'};
+			sprintf_s(buf, HEADER_BYTE_SIZE, "%018d\n", dwFilePos);
+			SetFilePointer(m_hFile, 0, NULL, FILE_BEGIN);
+			WriteFile(m_hFile, buf, HEADER_BYTE_SIZE, &dwWritten, NULL);
+			SetFilePointer(m_hFile, dwFilePos, NULL, FILE_BEGIN);  /* 在文件开头写入当前 写入的行数, 第二次启动的时候 读取,然后在 写入的位置写入.*/
 
 		}else {
 			return WriteFile(m_hFile, pBuffer, dwLength, &dwWritten, NULL);

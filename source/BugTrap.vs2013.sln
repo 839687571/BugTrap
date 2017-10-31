@@ -22,6 +22,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BugTrapTest", "Examples\BugTrapTest\BugTrapTest.vs2013.vcxproj", "{54F8FDBB-2F6B-407A-9C92-85CFEF68E7EC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BugTrapConsoleTest", "Examples\BugTrapConsoleTest\BugTrapConsoleTest.vs2013.vcxproj", "{6CB4122E-E337-4514-96E7-E60D2487BA5F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E8CF1ADA-264A-4127-86C2-FD7057D3792C} = {E8CF1ADA-264A-4127-86C2-FD7057D3792C}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
