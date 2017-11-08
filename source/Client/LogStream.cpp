@@ -19,6 +19,83 @@
 // use 20byte to store write size
 #define  HEADER_BYTE_SIZE   20
 
+/*
+
+
+*/
+
+
+SYSTEMTIME SystemTimeAdd(SYSTEMTIME src,long long  seconds)
+{
+	//SYSTEMTIME stTarget;
+	//GetLocalTime(&stTarget);
+
+	FILETIME ftTarget;
+	SystemTimeToFileTime(&src, &ftTarget);
+
+// 	WCHAR buf[256];
+// 	swprintf_s(buf, L"[%02d:%02d:%02d:%d]\t\n", stTarget.wHour, stTarget.wMinute, stTarget.wSecond, stTarget.wMilliseconds);
+// 	OutputDebugStringW(buf);
+
+	ULARGE_INTEGER  ulTarget;
+
+	ulTarget.HighPart = ftTarget.dwHighDateTime;
+	ulTarget.LowPart = ftTarget.dwLowDateTime;
+
+	ulTarget.QuadPart += seconds * 10000000i64;
+
+	ftTarget.dwHighDateTime = ulTarget.HighPart;
+	ftTarget.dwLowDateTime = ulTarget.LowPart;
+
+	SYSTEMTIME nT;
+	FileTimeToSystemTime(&ftTarget, &nT);
+
+// 	 buf[256];
+// 	swprintf_s(buf, L"[%02d:%02d:%02d:%d]\t\n", nT.wHour, nT.wMinute, nT.wSecond, nT.wMilliseconds);
+// 	OutputDebugStringW(buf);
+	return nT;
+}
+
+
+time_t SystemTimeToTimeTs(SYSTEMTIME& st)
+{
+	SYSTEMTIME stRef{};
+	stRef.wYear = 1970;
+	stRef.wMonth = 1;
+	stRef.wDay = 1;
+	stRef.wHour = 0;
+
+	FILETIME ftRef;
+	SystemTimeToFileTime(&stRef, &ftRef);
+
+	FILETIME lftRef;
+	FileTimeToLocalFileTime(&ftRef, &lftRef);
+
+	// target time, convert to FILETIME
+	//SYSTEMTIME stTarget;
+	//GetLocalTime(&stTarget);
+
+	FILETIME ftTarget;
+	SystemTimeToFileTime(&st, &ftTarget);
+
+	// convert both to ULARGE_INTEGER
+	ULARGE_INTEGER ulRef, ulTarget;
+	ulRef.HighPart = lftRef.dwHighDateTime;
+	ulRef.LowPart = lftRef.dwLowDateTime;
+	ulTarget.HighPart = ftTarget.dwHighDateTime;
+	ulTarget.LowPart = ftTarget.dwLowDateTime;
+
+
+	// subtract reference time from target time
+	ulTarget.QuadPart -= ulRef.QuadPart;
+
+	// convert to seconds (divide by 10000000)
+	DWORD dwSecondsSinceRefTime = ulTarget.QuadPart / 10000000i64;
+
+	return dwSecondsSinceRefTime;
+}
+
+
 DWORD CLogStream::GetLogSizeInBytes(void) const
 {
 	return m_SizeInBytes;
@@ -27,6 +104,19 @@ DWORD CLogStream::GetLogSizeInBytes(void) const
 BOOL CLogStream::SetLogSizeInBytes(DWORD dwLogSizeInBytes)
 {
 	m_SizeInBytes = dwLogSizeInBytes;
+	return TRUE;
+}
+BOOL CLogStream::SetTimestampFromInternet(long long tm)
+{
+	m_TimeOffset = tm;
+
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+
+	time_t t = SystemTimeToTimeTs(st);
+
+	m_TimeOffset = tm - t;
+
 	return TRUE;
 }
 
@@ -91,6 +181,7 @@ void CLogStream::Close(void)
 	}
 }
 
+
 /**
  * @param eLogLevel - log level number.
  * @param eEntryMode - entry mode.
@@ -111,8 +202,11 @@ BOOL CLogStream::WriteLogEntry(BUGTRAP_LOGLEVEL eLogLevel, ENTRY_MODE eEntryMode
 	{
 		SYSTEMTIME st;
 		GetLocalTime(&st);
-		if (! WriteLogEntryToConsole(eLogLevel, &st, rcsConsoleAccess, pszEntry))
-			FillEntryText(eLogLevel, &st, pszEntry);
+
+		SYSTEMTIME stInternet = SystemTimeAdd(st, m_TimeOffset);
+
+		if (!WriteLogEntryToConsole(eLogLevel, &stInternet, rcsConsoleAccess, pszEntry))
+			FillEntryText(eLogLevel, &stInternet, pszEntry);
 		EncodeEntryText();
 		const BYTE* pBuffer = m_MemStream.GetBuffer();
 		if (pBuffer == NULL)
@@ -151,8 +245,9 @@ BOOL CLogStream::WriteLogEntry(BUGTRAP_LOGLEVEL eLogLevel, ENTRY_MODE eEntryMode
 			}
 			BOOL ret  = WriteFile(m_hFile, pBuffer, dwLength, &dwWritten, NULL);
 			dwFilePos = SetFilePointer(m_hFile, 0, NULL, FILE_CURRENT);
-			char buf[HEADER_BYTE_SIZE] = {'0'};
-			sprintf_s(buf, HEADER_BYTE_SIZE, "%018d\n", dwFilePos);
+			char buf[HEADER_BYTE_SIZE] = { '0' };
+			sprintf_s(buf,"%018d\n", dwFilePos);
+			buf[19] = '0';
 			SetFilePointer(m_hFile, 0, NULL, FILE_BEGIN);
 			WriteFile(m_hFile, buf, HEADER_BYTE_SIZE, &dwWritten, NULL);
 			SetFilePointer(m_hFile, dwFilePos, NULL, FILE_BEGIN);  /* 在文件开头写入当前 写入的行数, 第二次启动的时候 读取,然后在 写入的位置写入.*/

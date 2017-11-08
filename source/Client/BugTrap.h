@@ -712,6 +712,10 @@ BUGTRAP_API DWORD APIENTRY BT_GetLogSizeInBytes(INT_PTR iHandle);
  */
 BUGTRAP_API BOOL APIENTRY BT_SetLogSizeInBytes(INT_PTR iHandle, DWORD dwLogSizeInEntries);
 /**
+* @brief Set time offset. This function is thread safe.
+*/
+BUGTRAP_API BOOL APIENTRY BT_SetLogUnixTime(INT_PTR, DWORD dwOffset);
+/**
  * @brief Return true if time stamp is added to every log entry.
  */
 BUGTRAP_API DWORD APIENTRY BT_GetLogFlags(INT_PTR iHandle);

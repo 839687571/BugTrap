@@ -124,6 +124,10 @@ public:
 		return BT_SetLogSizeInBytes(m_iHandle, dwSize);
 	}
 
+	BOOL SetLogUnixTime(DWORD offset){
+		return BT_SetLogUnixTime(m_iHandle, offset);
+	}
+
 	/// Return current set of log flags.
 	DWORD GetLogFlags(void) const {
 		return BT_GetLogFlags(m_iHandle);

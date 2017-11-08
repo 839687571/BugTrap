@@ -1036,6 +1036,15 @@ extern "C" BUGTRAP_API BOOL APIENTRY BT_SetLogSizeInBytes(INT_PTR iHandle, DWORD
 	return bResult;
 }
 
+extern "C" BUGTRAP_API BOOL APIENTRY BT_SetLogUnixTime(INT_PTR iHandle, DWORD dwOffset)
+{
+	CLogFile* pLogFile = EnterLogFunction(iHandle);
+	if (!pLogFile)
+		return FALSE;
+	BOOL bResult = pLogFile->SetTimestampFromInternet(dwOffset);
+	LeaveLogFunction(pLogFile);
+	return bResult;
+}
 /**
  * @param iHandle - log file handle.
  * @return current set of log flags.

@@ -5,13 +5,14 @@
 #include <string>
 using namespace std;
 INT_PTR g_iLogHandle = -1;
+INT_PTR g_iLogHandle2 = -1;
 
-string get_app_path()
+wstring get_app_path()
 {
 	TCHAR szPath[MAX_PATH] = { 0 };
 	::GetModuleFileName(NULL, szPath, MAX_PATH);
 
-	string strPath(szPath);
+	wstring strPath(szPath);
 	for (int nPos = (int)strPath.size() - 1; nPos >= 0; --nPos) {
 		TCHAR cChar = strPath[nPos];
 		if (_T('\\') == cChar || _T('/') == cChar)
@@ -42,14 +43,25 @@ static void SetupExceptionHandler()
 	BT_SetReportFilePath(get_app_path().c_str());
 
 	// Add custom log file using default name
-	g_iLogHandle = BT_OpenLogFile((get_app_path() + "mylog.log").c_str(), BTLF_STREAM);
-//	BT_SetLogSizeInEntries(g_iLogHandle, 100);
+	g_iLogHandle = BT_OpenLogFile((get_app_path() + L"mylog.log").c_str(), BTLF_STREAM);
+	g_iLogHandle2 = BT_OpenLogFile((get_app_path() + L"mylog2.log").c_str(), BTLF_STREAM);
+
+	///BT_SetLogSizeInEntries(g_iLogHandle2, 100);
 	BT_SetLogSizeInBytes(g_iLogHandle, 10000);
 	BT_SetLogFlags(g_iLogHandle, BTLF_SHOWTIMESTAMP);
-	BT_SetLogEchoMode(g_iLogHandle, BTLE_STDERR | BTLE_DBGOUT);
+	BT_SetLogEchoMode(g_iLogHandle, BTLE_STDERR | BTLE_DBGOUT); 
+	BT_SetLogUnixTime(g_iLogHandle, 1510131386);
+		
+	BT_SetLogSizeInBytes(g_iLogHandle2, 10000);
+	BT_SetLogFlags(g_iLogHandle2, BTLF_SHOWTIMESTAMP);
+	BT_SetLogEchoMode(g_iLogHandle2, BTLE_STDERR | BTLE_DBGOUT);
 
 	PCTSTR pszLogFileName = BT_GetLogFileName(g_iLogHandle);
 	BT_AddLogFile(pszLogFileName);
+
+	PCTSTR pszLogFileName2 = BT_GetLogFileName(g_iLogHandle2);
+	BT_AddLogFile(pszLogFileName2);
+
 }
 
 static unsigned APIENTRY ThreadFunc(void* /*args*/)
@@ -68,6 +80,9 @@ static unsigned APIENTRY ThreadFunc(void* /*args*/)
 		index++;
 		BT_AppLogEntryF(g_iLogHandle, BTLL_INFO, _T("Entering ThreadFunc() functio Entering ThreadFunc() functio Entering ThreadFunc() function Entering ThreadFunc() function index  =  %d"),index);
 		Sleep(100);
+
+		//log 2
+		BT_AppLogEntryF(g_iLogHandle2, BTLL_INFO, _T("Entering ThreadFunc() functio Entering ThreadFunc() functio Entering ThreadFunc() function Entering ThreadFunc() function index  =  %d"), index);
 	}
 
 	// Throwing access violation

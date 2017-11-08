@@ -46,6 +46,8 @@ public:
 	/// Set maximum log file size in bytes.
 	virtual BOOL SetLogSizeInBytes(DWORD dwLogSizeInBytes);
 
+	virtual BOOL SetTimestampFromInternet(long long tm);
+
 protected:
 	/// Get default log file extension.
 	virtual PCTSTR GetLogFileExtension(void) const;
@@ -67,10 +69,13 @@ private:
 	CMemStream m_MemStream;
 
 	DWORD      m_SizeInBytes;
+
+	long long  m_TimeOffset;  // local time offset with internet time
 };
 
 inline CLogStream::CLogStream(void) : m_MemStream(1024), m_EncStream(&m_MemStream)
-	,m_SizeInBytes(0)
+, m_SizeInBytes(0)
+, m_TimeOffset(0)
 {
 	m_hFile = INVALID_HANDLE_VALUE;
 }

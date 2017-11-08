@@ -50,6 +50,9 @@ public:
 	virtual DWORD GetLogSizeInBytes(void) const;
 	/// Set maximum log file size in bytes.
 	virtual BOOL SetLogSizeInBytes(DWORD dwLogSizeInBytes);
+	/// Set timestamp from Internet
+	virtual BOOL SetTimestampFromInternet(long long tm);
+
 	/// Return true if time stamp is added to every log entry.
 	DWORD GetLogFlags(void) const;
 	/// Set true if time stamp is added to every log entry.
@@ -172,6 +175,11 @@ inline DWORD CLogFile::GetLogSizeInBytes(void) const
 inline BOOL CLogFile::SetLogSizeInBytes(DWORD /*dwLogSizeInBytes*/)
 {
 	return FALSE;
+}
+
+inline 	BOOL CLogFile::SetTimestampFromInternet(long long tm)
+{
+	return FALSE; //default 
 }
 
 inline void CLogFile::CaptureObject(void)
