@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "BugTrapTest.h"
 #include "MainFrm.h"
+#include <string>
 
 #include "BugTrapTestDoc.h"
 #include "BugTrapTestView.h"
@@ -48,7 +49,9 @@ CBugTrapTestApp::CBugTrapTestApp()
 	BT_InstallSehFilter();
 
 	BT_SetActivityType(BTA_SAVEREPORT);
-	BT_SetReportFilePath("D:\\");
+
+
+	BT_SetReportFilePath(_T("D:\\"));
 }
 
 // The one and only CBugTrapTestApp object
